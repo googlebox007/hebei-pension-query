@@ -1,0 +1,24 @@
+# 虚拟环境
+venv/
+
+# 日志文件
+logs/
+*.log
+
+# 本地数据文件
+data/
+results/
+
+# 浏览器相关
+bin/chromium-1098/
+chrome_data/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE相关
+.idea/
+.vscode/
+__pycache__/
+*.pyc 
