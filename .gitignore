@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.spec
+
+# Virtual Environment
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+chrome_data/
+data/
+results/
+
+# Temporary files
+temp_build/
+
+# 浏览器相关
+bin/chromium-1098/
+browsers/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+~/
+
+# 添加以下内容到.gitignore
+echo "browsers/" >> .gitignore
+echo "~/" >> .gitignore 
