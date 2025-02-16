@@ -12,13 +12,19 @@ results/
 # 浏览器相关
 bin/chromium-1098/
 chrome_data/
+browsers/
 
 # 系统文件
 .DS_Store
 Thumbs.db
+~/
 
 # IDE相关
 .idea/
 .vscode/
 __pycache__/
-*.pyc 
+*.pyc
+
+# 添加以下内容到.gitignore
+echo "browsers/" >> .gitignore
+echo "~/" >> .gitignore 
