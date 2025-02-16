@@ -122,7 +122,8 @@ def init_browser():
     """
     clean_browser_data()
     print("正在初始化浏览器...")
-    playwright = None  # 显式初始化变量
+    playwright = None
+    context = None
     try:
         # 正确初始化Playwright实例
         playwright = sync_playwright().start()
@@ -133,10 +134,23 @@ def init_browser():
         else:
             base_path = os.path.dirname(__file__)
         
-        # 手动指定浏览器路径
-        chrome_path = os.path.join(base_path, "bin/chromium-1098/chrome-win/chrome.exe")
+        # 强制设置浏览器路径
+        browsers_dir = os.path.abspath(os.path.join(base_path, "browsers"))
+        os.environ["PLAYWRIGHT_BROWSERS_PATH"] = browsers_dir
+        os.environ["PLAYWRIGHT_DOWNLOAD_HOST"] = "https://npmmirror.com/mirrors/playwright/"
+        
+        # 动态获取最新版本号
+        versions = [d for d in os.listdir(browsers_dir) if d.startswith('chromium-')]
+        if not versions:
+            print(f"错误：未找到浏览器版本目录，请重新安装")
+            return None, None
+        latest_version = sorted(versions)[-1]  # 获取最新版本
+        
+        chrome_path = os.path.join(browsers_dir, latest_version, "chrome-win", "chrome.exe")
         if not os.path.exists(chrome_path):
             print(f"错误：浏览器可执行文件不存在于 {chrome_path}")
+            print("请执行以下命令安装浏览器驱动：")
+            print(f"set PLAYWRIGHT_BROWSERS_PATH={browsers_dir} && python -m playwright install chromium")
             return None, None
         
         user_data_dir = os.path.join(base_path, "chrome_data")
@@ -163,9 +177,6 @@ def init_browser():
         # 尝试重新安装浏览器驱动
         os.system('playwright install chromium')
         return None, None
-    finally:
-        if playwright:  # 仅在初始化成功时释放资源
-            playwright.stop()
 
 
 def init_check():
@@ -387,21 +398,28 @@ def clean_browser_data():
             print("请手动删除目录: ", data_dir)
 
 
-def check_browser_path():
-    """检查浏览器路径是否存在"""
-    base_path = os.path.dirname(__file__)
-    chrome_path = os.path.join(base_path, "bin/chromium-1098/chrome-win/chrome.exe")
-    if not os.path.exists(chrome_path):
-        print(f"错误：未找到浏览器可执行文件，请检查路径：{chrome_path}")
-        print("请执行以下命令安装浏览器驱动：")
-        print("python -m playwright install chromium")
-        return False
-    return True
+def print_progress(current, total, avg_time):
+    """
+    控制台进度显示函数
+    
+    参数：
+    current  : 当前完成数
+    total    : 总任务数
+    avg_time : 平均每个任务耗时
+    """
+    progress = current / total
+    bar_length = 40
+    filled = int(round(bar_length * progress))
+    bar = '█' * filled + '-' * (bar_length - filled)
+    
+    remaining = (total - current) * avg_time
+    mins, secs = divmod(remaining, 60)
+    
+    sys.stdout.write(f'\r进度: |{bar}| {progress:.1%} 剩余: {int(mins):02d}:{int(secs):02d}')
+    sys.stdout.flush()
 
 
 def main():
-    if not check_browser_path():
-        sys.exit(1)
     # 新增版权信息
     print("""\n
     **************************************************
@@ -509,8 +527,8 @@ def main():
         logging.warning("用户中断操作，正在保存临时结果...")
         save_to_excel(results, query_file)
     finally:
-        # 资源清理流程
-        cleanup_resources(context, playwright)
+        if playwright:
+            playwright.stop()  # 在程序结束时释放
 
 
 if __name__ == "__main__":
